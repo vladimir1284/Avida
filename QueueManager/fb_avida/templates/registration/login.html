@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block head %}
+	<style>
+	.form-group{
+	   margin-bottom: 1em;
+	}
+	</style>
+{% endblock %}
+
+{% block content %}
+
+	<div class="row justify-content-center main">
+	    <div class="col-8">
+	    <h3>Registrarse en el sistema</h3>
+			<form method="post" action="{% url 'login' %}">
+			{% csrf_token %}
+		    {{ form|crispy }}
+			
+			<div>
+			  <input type="submit" value="login" />
+			  <input type="hidden" name="next" value="{{ next }}" />
+			</div>
+			</form>
+	    
+	    {# Assumes you setup the password_reset view in your URLconf #}
+	    <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+	    </div>
+	</div>
+
+{% endblock %}

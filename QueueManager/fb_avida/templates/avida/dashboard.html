@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+    #header {
+        background: linear-gradient(to right, white 15%, var(--secondary) 40%);
+    }
+</style>
+{% endblock %}    
+    {% block header %}
+        <span class="logo"><img src="/static/logo.png"></span>
+    {% endblock %}
+    {% block title %}Dashboard{% endblock %}
+    {% block content %}
+    <h1>Pedidos</h1>
+{% endblock %}
