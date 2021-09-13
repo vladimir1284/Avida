@@ -21,13 +21,13 @@
 	  isOpen = event.detail.isOpen;
 	}
   function pedidos(){
-    view = "pedidos"
+    view = "orders"
   }
   function dashboard(){    
     view = "dashboard"
   }
   function clientes(){    
-    view = "clientes"
+    view = "clients"
   }
   </script>
   

@@ -4,7 +4,7 @@ html, body {
 	height: 100%;
 }
 html {
-	font-size: 28px;
+	font-size: 36px;
 }
 body {
 	color: #333;
@@ -65,4 +65,7 @@ button:focus {
 }
 .navbar-light .navbar-nav .nav-link {
     color: #004568;
+}
+.input-group-text{
+	height: 2.3em;
 }

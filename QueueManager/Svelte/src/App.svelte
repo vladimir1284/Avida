@@ -1,11 +1,19 @@
 <script>
 	import Bar from "./Bar.svelte"
 	import Clients from "./clients/Clients.svelte"
+	import Orders from "./orders/Orders.svelte"
+
+	let view = "orders"
 </script>
 
-<Bar/>
+<Bar bind:view={view}/>
 <main>
-	<Clients/>
+	{#if view == "orders"}
+		<Orders/>
+	{/if}
+	{#if view == "clients"}
+		<Clients/>
+	{/if}
 </main>
 
 <style>

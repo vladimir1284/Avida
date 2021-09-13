@@ -16,6 +16,7 @@
     "dev": "webpack serve --content-base public --host 0.0.0.0 --public vladimir-casa:8081"
   },
   "dependencies": {
+    "luxon": "^2.0.2",
     "svelte-forms-lib": "^1.10.6",
     "svelte-material-icons": "^1.0.3",
     "sveltestrap": "^5.6.3",
