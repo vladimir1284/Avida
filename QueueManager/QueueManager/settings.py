@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'fb_avida',
+    'corsheaders', # Just for develoment
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",# Just for development
+    "django.middleware.common.CommonMiddleware",# Just for development
 ]
 
 ROOT_URLCONF = 'QueueManager.urls'
@@ -150,3 +153,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LOGIN_REDIRECT_URL = '/fb_avida/'
 
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+# Just for development
+ALLOWED_HOSTS=['*']
+CORS_ORIGIN_ALLOW_ALL = True

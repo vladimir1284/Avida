@@ -9,25 +9,34 @@
       DropdownMenu,
       DropdownToggle
     } from 'sveltestrap';
-    import {clientes} from '../backend'
+	  import { base_url, clients, orders } from '../stores.js';
     import * as yup from 'yup';
+    import { get } from 'svelte/store'
+    var { DateTime } = require('luxon');
 
     export let openform
     export let order 
+
+
     let result
     let errors = {}
     let selectedClient=""
+    let clientes = Object.values(get(clients))
     let filteredClients = clientes
     let isOpen = false;
+
+    $:{
+        clientes = Object.values($clients)
+    }
 
     const extractErrors = err => {
         return {[err.path]: err.message };
     };
 
     let schema = yup.object().shape({
-      client_id: yup.number().required('Debes seleccionar un cliente').nullable(),
-      lts: yup.number().min(20,"Deben ser más de 20L por pedido"),
-      available: yup.date().nullable()
+      client: yup.number().required('Debes seleccionar un cliente'),
+      lts: yup.number().min(20 ,"Deben ser más de 20L por pedido"),
+      available: yup.date().nullable(true)
     });
 
     const { form, handleChange, handleSubmit } = createForm({
@@ -36,7 +45,30 @@
         result = schema.validate(values)
         result.then(
           () => {
-            alert(JSON.stringify(values))
+            if(values.available){
+              values.available = DateTime.fromISO(values.available)
+            }
+            fetch(base_url+'new_order/', {
+                method: 'POST', // or 'PUT'
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(values),
+              })
+              .then(response => response.json())
+              .then(response_values => {
+                // Locally store the new order
+                values['id'] = response_values.id
+                values['created'] = DateTime.utc().toISO()
+                const pedidos = get(orders)
+                pedidos[values.id] = values
+                orders.set(pedidos)
+                console.log('Orders:', pedidos);
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+            });
+            // alert(JSON.stringify(values))
             openform = false
           }
         ).catch(value => {
@@ -60,7 +92,7 @@
 
   function pickClient(event){ 
     selectedClient = event.target.innerHTML
-    $form.client_id = parseInt(event.target.id)
+    $form.client = parseInt(event.target.id)
     console.log(form)
   }
 
@@ -73,7 +105,7 @@
 <Form on:submit={handleSubmit} autocomplete="off">
   <Row>
     <Col xs="12">      
-      <small class="text-danger">{#if errors.client_id}{errors.client_id}{/if}</small>
+      <small class="text-danger">{#if errors.client}{errors.client}{/if}</small>
       <FormGroup style="display: inline-flex;">
         <Label for="client_name">Cliente:* &nbsp;</Label>
         <Dropdown {isOpen} toggle={() => isOpen = !isOpen}>
@@ -81,7 +113,7 @@
             <Input id="clientFilter"
             type="text"
             name="client_name"
-            invalid={errors.client_id}
+            invalid={errors.client}
             on:keyup={searchClient}
             bind:value={selectedClient}
             />

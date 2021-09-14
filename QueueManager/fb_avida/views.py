@@ -1,14 +1,14 @@
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login
-from .forms import LoginForm
 from django.views import generic
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
+from django.http import JsonResponse
+from .models import Client, Order, OrderStage, DiscardedOrder
 import json
 import sys
 import requests
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView
 
 from .forms import CustomAuthenticationForm
 
@@ -19,29 +19,112 @@ class CustomLoginView(LoginView):
 @login_required
 def dashboard(request):
     return render(request, 'index.html')
+
+#@login_required
+@csrf_exempt
+def update_order(request):    
+    if request.method == 'POST':
+        json_data = json.loads(request.body)
+        try:
+            id = json_data['id']
+            stage = json_data['stage']
+        except KeyError:
+            HttpResponseServerError("Malformed data!")            
+        order = Order.objects.get(id = id)
+        try:
+            order.stage = OrderStage.objects.filter(name = stage)[0]
+            order.delete()
+            order = DiscardedOrder(order)
+            order.save()
+            return JsonResponse({'result':'ok'})
+        except Client.DoesNotExist:
+            return JsonResponse({'result':'No existe ese pedido!'})
+        
+
+#@login_required
+@csrf_exempt
+def new_order(request):
+    if request.method == 'POST':
+        try:
+            json_data = json.loads(request.body)
+            json_data['client'] = Client.objects.get(id=json_data['client'])
+            order = Order(**json_data)
+            order.stage = OrderStage.objects.filter(name = 'queued')[0]
+            order.save()
+            return JsonResponse({'id':order.id})
+        except KeyError:
+            HttpResponseServerError("Malformed data!")
+
+#@login_required
+def get_orders(request):
+    orders_qs = Order.objects.all().order_by("-created")
+    orders = {}
+
+    for order in orders_qs:
+        orders.setdefault(order.id, {
+            "id": order.id,
+            "client": order.client.id,
+            "stage": order.stage.name,
+            "created": order.created,
+            "available": order.available,
+            "lts": order.lts,
+            })
     
+    return JsonResponse({'orders':orders})
+
+#@login_required
+@csrf_exempt
+def del_client(request):    
+    if request.method == 'POST':
+        json_data = json.loads(request.body)
+        try:
+            id = json_data['id']
+        except KeyError:
+            HttpResponseServerError("Malformed data!")            
+        client = Client.objects.get(id = id)
+        try:
+            client.delete()
+            return JsonResponse({'result':'ok'})
+        except Client.DoesNotExist:
+            return JsonResponse({'result':'No existe ese cliente!'})
+        
+
+#@login_required
+@csrf_exempt
+def new_client(request):
+    if request.method == 'POST':
+        try:
+            json_data = json.loads(request.body)
+            client = Client(**json_data)
+            client.save()
+            return JsonResponse({'id':client.id})
+        except KeyError:
+            HttpResponseServerError("Malformed data!")
+
+#@login_required
+def get_clients(request):
+    clients_qs = Client.objects.all()
+    clients = {}
+
+    for client in clients_qs:
+        clients.setdefault(client.id, {
+            "id": client.id,
+            "name": client.name,
+            "cel": number2str(client.cel),
+            "phone": number2str(client.phone),
+            "address": client.address,
+            "fbid": number2str(client.fbid),
+            })
     
-# # Function for handling login
-# def user_login(request):
-#     if request.method == 'POST':
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             cd = form.cleaned_data
-#             user = authenticate(request,
-#                                 username=cd['username'],
-#                                 password=cd['password'])
-#             if user is not None:
-#                 if user.is_active:
-#                     login(request, user)
-#                     return HttpResponse('Authenticated '\
-#                     'successfully')
-#                 else:
-#                     return HttpResponse('Disabled account')
-#             else:
-#                 return HttpResponse('Invalid login')
-#     else:
-#         form = LoginForm()
-#     return render(request, 'avida/login.html', {'form': form})
+    return JsonResponse({'clients':clients})
+
+# Convert number to string 
+def number2str(num):
+    if (num != None):
+        return str(num)
+    else:
+        ""
+    
 
 # Function for sendig messages
 def post_facebook_message(fbid, recevied_message):           

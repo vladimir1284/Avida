@@ -2,8 +2,11 @@
     import { createForm } from "svelte-forms-lib";
     import { Button } from 'sveltestrap';
     import { Col, Row } from 'sveltestrap'
+    import TrashCan from "svelte-material-icons/TrashCan.svelte";
     import { Form, FormGroup, Input, Label } from 'sveltestrap';
     import * as yup from 'yup';
+	  import { base_url, clients } from '../stores.js';
+    import { get } from 'svelte/store'
 
     export let openform
     export let client 
@@ -16,12 +19,20 @@
         return {[err.path]: err.message };
     };
 
+    // Convert empty string into null
+    function emptyStr2null(value, originalValue) { 
+      if (!value) { 
+        return null; 
+      } 
+      return originalValue; 
+    }
+
     let schema = yup.object().shape({
       name: yup.string().required('Debes introducir un nombre'),
-      cel: yup.string().matches(phoneRegExp, 'Este número celular no es válido').nullable(),
-      phone: yup.string().matches(phoneRegExp, 'Este número fijo no es válido').nullable(),
+      cel: yup.string().matches(phoneRegExp, 'Este número celular no es válido').nullable(true).default(null).transform(( emptyStr2null)),
+      phone: yup.string().matches(phoneRegExp, 'Este número fijo no es válido').nullable(true).default(null).transform(( emptyStr2null)),
       address: yup.string().required('Necesitamos la dirección'),
-      fbid: yup.string().nullable(),
+      fbid: yup.string().nullable(true).default(null).transform(( emptyStr2null)),
       // createdOn: yup.date().default(function () {
       //   return new Date();
       // }),
@@ -33,8 +44,27 @@
         result = schema.validate(values)
         result.then(
           () => {
-            alert(JSON.stringify(values))
-            // openform = false
+            const castedValues = schema.cast(values)
+            fetch(base_url+'new_client/', {
+                method: 'POST', // or 'PUT'
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(castedValues),
+              })
+              .then(response => response.json())
+              .then(values => {
+                // Locally store the new client
+                castedValues['id'] = values.id
+                const clientes = get(clients)
+                clientes[values.id] = castedValues
+                clients.set(clientes)
+                // console.log('New client list:', clientes);
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+            });
+            openform = false
           }
         ).catch(value => {
           errors = extractErrors(value)
@@ -42,8 +72,31 @@
         });
       }
     });
-    function exit(){
-      openform = false
+
+    function delete_client(event){
+      event.preventDefault(); // Avoids form close
+      let confirmAction = confirm("¿Quieres borrar este cliente?");
+      if (confirmAction) {
+        fetch(base_url+'del_client/', {
+                method: 'POST', // or 'PUT'
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({'id':client.id}),
+              })
+              .then(response => response.json())
+              .then(values => {
+                // Locally remove the client
+                const clientes = get(clients)
+                delete clientes[client.id];
+                clients.set(clientes)
+                openform = false;
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+            });
+        openform = false;
+      }
     }
 </script>
 
@@ -51,13 +104,20 @@
   <FormGroup>
     <Label for="name">Nombre: *
       <small class="text-danger">{#if errors.name}{errors.name}{/if}</small></Label>
-    <Input id="name"
-    type="name"
-    name="name"
-    invalid={errors.name}
-    on:change={handleChange}
-    bind:value={$form.name}
-    />
+    <Row>
+      <Col xs=11>
+        <Input id="name"
+        type="name"
+        name="name"
+        invalid={errors.name}
+        on:change={handleChange}
+        bind:value={$form.name}
+        />
+      </Col>
+      <Col xs=1>
+          <Button on:click={delete_client} color="danger"><TrashCan color="white"/></Button> 
+      </Col>
+    </Row>
   </FormGroup>
   <small class="text-danger">
     {#if errors.fbid}{errors.fbid}{/if}  
@@ -120,7 +180,7 @@
 
   <Row>
     <Col class="text-center" xs="6">
-      <Button on:click={exit} color='danger'>Cancelar</Button>
+      <Button on:click={() => {openform = false;}} color='danger'>Cancelar</Button>
     </Col>
     <Col class="text-center" xs="6">
       <Button color='success' type="submit">Submit</Button>

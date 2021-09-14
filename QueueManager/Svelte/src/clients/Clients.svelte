@@ -1,15 +1,20 @@
 
 <script>
     import  {Table}  from 'sveltestrap'
-    import {clientes} from '../backend'
     import ClientForm from './ClientForm.svelte'
     import { Button, Row, Col, Input, Container } from 'sveltestrap';
     import PlusThick from "svelte-material-icons/PlusThick.svelte";
     import {filterTable} from '../utils'
     import { onMount } from 'svelte';   
+	import { clients } from '../stores.js';
 
     let openform = false
     let currentClient 
+    let clientes
+
+    $:{
+        clientes = Object.values($clients)
+    }
 
     function add_client(){
         currentClient = {
@@ -38,7 +43,6 @@
 {#if openform}
     <ClientForm client={currentClient} bind:openform={openform}/>
 {:else}
-<Container>
     <Row>
         <Col xs="3">
             <h3>Clientes</h3>
@@ -54,7 +58,6 @@
             />
         </Col>
     </Row>
-</Container>
 
     <Table striped responsive id="clientsTable">
         <thead>
@@ -70,8 +73,8 @@
                     <td on:click={edit_client} id={index}>{client.name}</td>
                     <td>{client.address}</td>
                     <td>
-                        <a href="tel:{client.phone}"> {client.phone}</a>
-                        <a href="tel:{client.cel}"> {client.cel}</a>
+                        <a href="tel:{client.phone}"> {#if client.phone}{client.phone}{/if}</a>
+                        <a href="tel:{client.cel}"> {#if client.cel}{client.cel}{/if}</a>
                     </td>
                 </tr>
             {/each}
