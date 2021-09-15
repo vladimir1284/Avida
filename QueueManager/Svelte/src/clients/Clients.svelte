@@ -5,7 +5,6 @@
     import { Button, Row, Col, Input, Container } from 'sveltestrap';
     import PlusThick from "svelte-material-icons/PlusThick.svelte";
     import {filterTable} from '../utils'
-    import { onMount } from 'svelte';   
 	import { clients } from '../stores.js';
 
     let openform = false
@@ -30,7 +29,6 @@
 
     function edit_client(event){        
         currentClient = clientes[parseInt(event.target.id)]
-        console.log(currentClient)
         openform = true
     }
     

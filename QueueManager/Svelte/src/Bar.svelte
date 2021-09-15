@@ -33,7 +33,7 @@
   
   
 <Navbar color="light" light expand="md">
-    <NavbarBrand on:click={dashboard}><img src="img/logo.png" alt="Ávida"></NavbarBrand>
+    <NavbarBrand on:click={dashboard}><img src="../Svelte/public/img/logo.png" alt="Ávida"></NavbarBrand>
     <NavbarToggler on:click={() => (isOpen = !isOpen)} />
     <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
         <Nav class="ms-auto" navbar>

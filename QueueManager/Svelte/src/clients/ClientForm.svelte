@@ -33,9 +33,6 @@
       phone: yup.string().matches(phoneRegExp, 'Este número fijo no es válido').nullable(true).default(null).transform(( emptyStr2null)),
       address: yup.string().required('Necesitamos la dirección'),
       fbid: yup.string().nullable(true).default(null).transform(( emptyStr2null)),
-      // createdOn: yup.date().default(function () {
-      //   return new Date();
-      // }),
     });
 
     const { form, handleChange, handleSubmit } = createForm({
@@ -49,6 +46,7 @@
                 method: 'POST', // or 'PUT'
                 headers: {
                   'Content-Type': 'application/json',
+                  "X-CSRFToken": document.getElementsByTagName("input").csrfmiddlewaretoken.value,
                 },
                 body: JSON.stringify(castedValues),
               })
@@ -59,7 +57,6 @@
                 const clientes = get(clients)
                 clientes[values.id] = castedValues
                 clients.set(clientes)
-                // console.log('New client list:', clientes);
               })
               .catch((error) => {
                 console.error('Error:', error);
@@ -77,12 +74,15 @@
       event.preventDefault(); // Avoids form close
       let confirmAction = confirm("¿Quieres borrar este cliente?");
       if (confirmAction) {
+        const values = {'id':client.id};
+        // values['csrfmiddlewaretoken'] = document.getElementsByTagName("input").csrfmiddlewaretoken.value;
         fetch(base_url+'del_client/', {
                 method: 'POST', // or 'PUT'
                 headers: {
                   'Content-Type': 'application/json',
+                  "X-CSRFToken": document.getElementsByTagName("input").csrfmiddlewaretoken.value,
                 },
-                body: JSON.stringify({'id':client.id}),
+                body: JSON.stringify(values),
               })
               .then(response => response.json())
               .then(values => {

@@ -21,10 +21,7 @@ class CustomLoginView(LoginView):
 def dashboard(request):
     return render(request, 'index.html')
 
-# @login_required
-
-
-@csrf_exempt
+@login_required
 def update_order(request):
     if request.method == 'POST':
         json_data = json.loads(request.body)
@@ -47,8 +44,7 @@ def update_order(request):
             return JsonResponse({'result': 'No existe ese pedido!'})
 
 
-# @login_required
-@csrf_exempt
+@login_required
 def new_order(request):
     if request.method == 'POST':
         try:
@@ -67,9 +63,7 @@ def new_order(request):
         except KeyError:
             HttpResponseServerError("Malformed data!")
 
-# @login_required
-
-
+@login_required
 def get_orders(request):
     orders_qs = Order.objects.all().order_by("-created")
     orders = {}
@@ -86,10 +80,7 @@ def get_orders(request):
 
     return JsonResponse({'orders': orders})
 
-# @login_required
-
-
-@csrf_exempt
+@login_required
 def del_client(request):
     if request.method == 'POST':
         json_data = json.loads(request.body)
@@ -105,8 +96,7 @@ def del_client(request):
             return JsonResponse({'result': 'No existe ese cliente!'})
 
 
-# @login_required
-@csrf_exempt
+@login_required
 def new_client(request):
     if request.method == 'POST':
         try:
@@ -117,9 +107,7 @@ def new_client(request):
         except KeyError:
             HttpResponseServerError("Malformed data!")
 
-# @login_required
-
-
+@login_required
 def get_clients(request):
     clients_qs = Client.objects.all()
     clients = {}
@@ -140,7 +128,7 @@ def get_clients(request):
 
 
 def number2str(num):
-    if (num != None):
+    if (num is not None):
         return str(num)
     else:
         ""
@@ -185,7 +173,8 @@ class AvidaBotView(generic.View):
                 if 'message' in message:
                     # Print the message to the terminal
                     print(message, file=sys.stderr)
-                    # Assuming the sender only sends text. Non-text messages like stickers, audio, pictures
+                    # Assuming the sender only sends text. 
+                    # Non-text messages like stickers, audio, pictures
                     # are sent as attachments and must be handled accordingly.
                     post_facebook_message(
                         message['sender']['id'], message['message']['text'])

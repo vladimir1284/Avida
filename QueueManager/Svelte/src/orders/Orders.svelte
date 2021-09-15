@@ -50,11 +50,17 @@
     }
 
     function deliver_order(){
+      let confirmAction = confirm("¿Seguro que este pedido fué entregado?");
+      if (confirmAction) {
         updateOrderStage('delivered')
+      }
     }
 
     function cancel_order(){
+      let confirmAction = confirm("¿Seguro que va a cancelar este pedido?");
+      if (confirmAction) {
         updateOrderStage('canceled')
+      }
     }
 
     function updateOrderStage(stage){
@@ -62,10 +68,12 @@
             id: currentOrder.id,
             stage: stage
         }
+        // values['csrfmiddlewaretoken'] = document.getElementsByTagName("input").csrfmiddlewaretoken.value;
         fetch(base_url+'update_order/', {
                 method: 'POST', // or 'PUT'
                 headers: {
                   'Content-Type': 'application/json',
+                  "X-CSRFToken": document.getElementsByTagName("input").csrfmiddlewaretoken.value,
                 },
                 body: JSON.stringify(values),
               })

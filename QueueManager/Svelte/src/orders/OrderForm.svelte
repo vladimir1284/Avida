@@ -60,10 +60,12 @@
             if(values.available){
               values.available = DateTime.fromISO(values.available)
             }
+            // values['csrfmiddlewaretoken'] = document.getElementsByTagName("input").csrfmiddlewaretoken.value;
             fetch(base_url+'new_order/', {
                 method: 'POST', // or 'PUT'
                 headers: {
                   'Content-Type': 'application/json',
+                  "X-CSRFToken": document.getElementsByTagName("input").csrfmiddlewaretoken.value,
                 },
                 body: JSON.stringify(values),
               })
