@@ -7,17 +7,31 @@
     import Pencil from "svelte-material-icons/Pencil.svelte";
     import Cancel from "svelte-material-icons/Cancel.svelte";
     import Check from "svelte-material-icons/Check.svelte";
-    import {filterTable} from '../utils'
-    import { onMount } from 'svelte';   
-	import { clients, orders } from '../stores.js';
+    import {filterTable, fetch_data} from '../utils'
+	import { clients, orders, base_url } from '../stores.js';
     import { get } from 'svelte/store'
     var { DateTime } = require('luxon');
 
     let pedidos
+    let unavailable
 
     $:{
         pedidos = Object.values($orders)
-        console.log(pedidos)
+        if (pedidos){
+            // Filter unavailable
+            unavailable = []
+            const available = []
+            pedidos.forEach(order => {
+                if(DateTime.fromISO(order.available).diffNow() > 0){
+                    unavailable.push(order)
+                } else {
+                    available.push(order)
+                }
+            });
+            pedidos = available
+            // Select order
+            currentOrder = pedidos[0]
+        }
     }
 
 
@@ -25,36 +39,55 @@
     let currentOrder
     let orderToEdit 
     let currentIndex = 1
+    let searchFilter = ""
 
-    
-    // Search event handler
-    onMount(() => {
-        currentOrder = pedidos[0]
-        console.log(currentOrder)
-		filterTable("orderSearchInput", "ordersTable")
-	});
+    $:{filterTable(searchFilter, "ordersTable")}
     
 
     function add_order(){
-        orderToEdit = {
-                        "client": null,
-                        "lts": 20,
-                        "available": null
-                        }
+        orderToEdit = null
         openform = true
     }
 
-    function deliver_order(event){
-        
+    function deliver_order(){
+        updateOrderStage('delivered')
     }
 
-    function cancel_order(event){
-        
+    function cancel_order(){
+        updateOrderStage('canceled')
+    }
+
+    function updateOrderStage(stage){
+        const values = {
+            id: currentOrder.id,
+            stage: stage
+        }
+        fetch(base_url+'update_order/', {
+                method: 'POST', // or 'PUT'
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(values),
+              })
+              .then(response => response.json())
+              .then(() => {
+                // Get the orders from server again
+                fetch_data('orders', 'get_orders/', orders)
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+            });
     }
 
     function view_order(event){
-        currentIndex = parseInt(event.target.id) + 1    
-        currentOrder = pedidos[currentIndex-1]
+        const index = parseInt(event.target.id)
+        currentIndex = index + 1   
+        if (index >= pedidos.length){
+            currentOrder = unavailable[index - pedidos.length]
+
+        } else {
+            currentOrder = pedidos[index]
+        }
     }
 
     function edit_order(event){    
@@ -79,6 +112,7 @@
             type="text"
             placeholder="Buscar.."
             style="max-width: 500px;"
+            bind:value={searchFilter}
             />
         </Col>
     </Row>
@@ -108,7 +142,11 @@
         </Row>
         <Row>
             <Col xs="4">
-                Pedido a las <b>{DateTime.fromISO(currentOrder.created).setZone('local').toFormat('hh:mma')}</b>
+                {#if DateTime.fromISO(currentOrder.available).diffNow() > 0}
+                    Disponible a las <b>{DateTime.fromISO(currentOrder.available).setZone('local').toFormat('hh:mma')}</b>
+                {:else}
+                    Pedido a las <b>{DateTime.fromISO(currentOrder.created).setZone('local').toFormat('hh:mma')}</b>
+                {/if}
             </Col>
             <Col xs="8">
                 {get(clients)[currentOrder.client].address}
@@ -131,6 +169,14 @@
                 {#each pedidos as pedido, index}
                     <tr>
                         <th scope="row"><Button on:click={view_order} id={index}>{index+1}</Button></th>
+                        <td>{DateTime.fromISO(pedido.created).setZone('local').toFormat('hh:mma')}</td>
+                        <td on:click={view_order} id={index}>{get(clients)[pedido.client].name}</td>
+                        <td class="text-center">{pedido.lts}L</td>
+                    </tr>
+                {/each}
+                {#each unavailable as pedido, index}
+                    <tr style="color: gray;">
+                        <th scope="row"><Button on:click={view_order} id={index + pedidos.length}>{index + pedidos.length + 1}</Button></th>
                         <td>{DateTime.fromISO(pedido.created).setZone('local').toFormat('hh:mma')}</td>
                         <td on:click={view_order} id={index}>{get(clients)[pedido.client].name}</td>
                         <td class="text-center">{pedido.lts}L</td>

@@ -1,10 +1,12 @@
+import { base_url } from './stores.js';
+
 // Filter element rows
-export function filterTable(searchInput, filterTabl) {
-    const input = document.getElementById(searchInput);
-    input.addEventListener('keyup', function(e) {
-        var filter, table, tr, i, txtValue;
-        filter = input.value.toUpperCase();
-        table = document.getElementById(filterTabl);
+export function filterTable(searchFilter, filterTabl) {
+    var filter, table, tr, i, txtValue;
+    
+    filter = searchFilter.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    table = document.getElementById(filterTabl);
+    if (table){
         tr = table.getElementsByTagName("tr");
         for (i = 1; i < tr.length; i++) {
             const row = tr[i].getElementsByTagName("td")
@@ -23,6 +25,21 @@ export function filterTable(searchInput, filterTabl) {
                 }
             }       
         }
-    }, false);
+    }
 }
- 
+
+// Ascynchronusly fetch data from backend
+export function fetch_data(data_name, url, data_store){
+    fetch(base_url + url)
+    .then(response => {
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+        throw new TypeError("Oops, we haven't got JSON!");
+        }
+        return response.json();
+    })
+    .then(data => {
+        data_store.set(data[data_name]);
+    })
+    .catch(error => console.error(error));
+}

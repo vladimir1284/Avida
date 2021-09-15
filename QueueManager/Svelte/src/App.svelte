@@ -2,38 +2,17 @@
 	import Bar from "./Bar.svelte"
 	import Clients from "./clients/Clients.svelte"
 	import Orders from "./orders/Orders.svelte"
-	import { clients, orders, base_url } from './stores.js';
+	import { clients, orders } from './stores.js';
     import { onMount } from 'svelte';  
+    import {fetch_data} from './utils'
 
 	let view = "orders"
 
 
     // Get clients
     onMount(() => {
-		fetch(base_url + 'get_clients/')
-			.then(response => {
-				const contentType = response.headers.get('content-type');
-				if (!contentType || !contentType.includes('application/json')) {
-				throw new TypeError("Oops, we haven't got JSON!");
-				}
-				return response.json();
-			})
-			.then(data => {
-				clients.set(data.clients);
-			})
-			.catch(error => console.error(error));
-		fetch(base_url + 'get_orders/')
-			.then(response => {
-				const contentType = response.headers.get('content-type');
-				if (!contentType || !contentType.includes('application/json')) {
-				throw new TypeError("Oops, we haven't got JSON!");
-				}
-				return response.json();
-			})
-			.then(data => {
-				orders.set(data.orders);
-			})
-			.catch(error => console.error(error));
+		fetch_data('clients', 'get_clients/', clients);
+		fetch_data('orders', 'get_orders/', orders);
 	});
     
 </script>

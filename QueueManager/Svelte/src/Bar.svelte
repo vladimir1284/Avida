@@ -47,9 +47,9 @@
             <DropdownToggle nav caret>Opciones</DropdownToggle>
             <DropdownMenu end>
             <DropdownItem><a href="/accounts/logout/">Salir</a></DropdownItem>
-            <DropdownItem>Option 2</DropdownItem>
+            <!-- <DropdownItem>Option 2</DropdownItem>
             <DropdownItem divider />
-            <DropdownItem>Reset</DropdownItem>
+            <DropdownItem>Reset</DropdownItem> -->
             </DropdownMenu>
         </Dropdown>
         </Nav>

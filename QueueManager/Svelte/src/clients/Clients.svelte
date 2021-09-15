@@ -11,10 +11,11 @@
     let openform = false
     let currentClient 
     let clientes
+    let searchFilter = ""
 
-    $:{
-        clientes = Object.values($clients)
-    }
+    $:{filterTable(searchFilter, "clientsTable")}
+
+    $:{clientes = Object.values($clients)}
 
     function add_client(){
         currentClient = {
@@ -26,11 +27,6 @@
                         }
         openform = true
     }
-
-    // Search event handler
-    onMount(() => {
-        filterTable("searchInput", "clientsTable")
-    });
 
     function edit_client(event){        
         currentClient = clientes[parseInt(event.target.id)]
@@ -55,6 +51,7 @@
             type="text"
             placeholder="Buscar.."
             style="max-width: 500px;"
+            bind:value={searchFilter}
             />
         </Col>
     </Row>

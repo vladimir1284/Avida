@@ -2,6 +2,7 @@
     import { createForm } from "svelte-forms-lib";
     import { Button } from 'sveltestrap';
     import { Col, Row } from 'sveltestrap'
+    import {fetch_data} from '../utils'
     import { Form, FormGroup, Input, Label, InputGroupText, InputGroup } from 'sveltestrap';
     import {
       Dropdown,
@@ -39,8 +40,19 @@
       available: yup.date().nullable(true)
     });
 
+    // Init form
+    let initial_values = {
+                            "client": null,
+                            "lts": 20,
+                            "available": null
+                            };
+    if (order !== null){
+      initial_values = order
+      initial_values.available = DateTime.fromISO(initial_values.available).setZone('local').toFormat("yyyy-MM-dd'T'HH:mm")
+      selectedClient = get(clients)[initial_values.client].name
+    }
     const { form, handleChange, handleSubmit } = createForm({
-      initialValues: order,
+      initialValues: initial_values,
       onSubmit: values => {
         result = schema.validate(values)
         result.then(
@@ -56,14 +68,9 @@
                 body: JSON.stringify(values),
               })
               .then(response => response.json())
-              .then(response_values => {
-                // Locally store the new order
-                values['id'] = response_values.id
-                values['created'] = DateTime.utc().toISO()
-                const pedidos = get(orders)
-                pedidos[values.id] = values
-                orders.set(pedidos)
-                console.log('Orders:', pedidos);
+              .then(() => {
+                // Get the orders from server again
+                fetch_data('orders', 'get_orders/', orders)
               })
               .catch((error) => {
                 console.error('Error:', error);
@@ -78,10 +85,11 @@
       }
     });
 
-    function searchClient(){
+    $:{searchClient(selectedClient)}
+
+    function searchClient(input_str){
       filteredClients = []
-      const input = document.getElementById("clientFilter");
-      const filter = input.value.toUpperCase();
+      const filter = input_str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
       clientes.forEach((client) => {
         const txtValue = client.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
@@ -92,8 +100,8 @@
 
   function pickClient(event){ 
     selectedClient = event.target.innerHTML
+    isOpen = true
     $form.client = parseInt(event.target.id)
-    console.log(form)
   }
 
     function exit(){
@@ -114,7 +122,6 @@
             type="text"
             name="client_name"
             invalid={errors.client}
-            on:keyup={searchClient}
             bind:value={selectedClient}
             />
           </DropdownToggle>

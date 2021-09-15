@@ -2,50 +2,54 @@
 
 from django.db import migrations
 
+
 def create_order_satges(apps, schema_editor):
     ORDER_SATGES = (
         'waiting',
         'queued',
         'delivered',
         'canceled',
-        )
+    )
     OrderStage = apps.get_model('fb_avida', 'OrderStage')
     for stage_name in ORDER_SATGES:
-        stage = OrderStage (name=stage_name)
+        stage = OrderStage(name=stage_name)
         stage.save()
+
 
 def clean_order_satges(apps, schema_editor):
     OrderStage = apps.get_model('fb_avida', 'OrderStage')
     for stage in OrderStage.objects.all():
         stage.delete()
 
+
 def create_clients(apps, schema_editor):
-    
+
     Client = apps.get_model('fb_avida', 'Client')
-    
-    juana = Client (name = "Juana de la Caridad",
-                    cel = 54346723,
-                    phone = 81234567,
-                    address = "Loma 345 % Bajando y Subiendo, La Marquesa.")
+
+    juana = Client(name="Juana de la Caridad",
+                   cel=54346723,
+                   phone=81234567,
+                   address="Loma 345 % Bajando y Subiendo, La Marquesa.")
     juana.save()
-    
-    pedro = Client(name = "Pedro Ramón Hernández",
-                    cel = 59676723,
-                    address = "Loma 345 % Bajando y Subiendo, La Marquesa.")
+
+    pedro = Client(name="Pedro Ramón Hernández",
+                   cel=59676723,
+                   address="Loma 345 % Bajando y Subiendo, La Marquesa.")
     pedro.save()
-    
-    estevan = Client(name = "Estevan Rodríguez",
-                     cel = 54343423,
-                     phone = 81564567,
-                     address = "Martí 455 % Carr. central y Benavides, Guáimaro Norte.")
+
+    estevan = Client(name="Estevan Rodríguez",
+                     cel=54343423,
+                     phone=81564567,
+                     address="Martí 455 % Carr. central y Benavides, Guáimaro Norte.")
     estevan.save()
-    
-    vladimir = Client(name = "Vladímir Rodríguez",
-                      cel = 54873173,
-                      phone = 32248118,
-                      fbid = 111459581238114,
-                      address = "San Ramón 299 % San José y San Martín, Camagüey")
+
+    vladimir = Client(name="Vladímir Rodríguez",
+                      cel=54873173,
+                      phone=32248118,
+                      fbid=111459581238114,
+                      address="San Ramón 299 % San José y San Martín, Camagüey")
     vladimir.save()
+
 
 def clean_clients(apps, schema_editor):
     Client = apps.get_model('fb_avida', 'Client')
