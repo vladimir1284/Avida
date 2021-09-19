@@ -36,7 +36,7 @@
 
     let schema = yup.object().shape({
       client: yup.number().required('Debes seleccionar un cliente'),
-      lts: yup.number().min(20 ,"Deben ser más de 20L por pedido"),
+      lts: yup.number().min(15 ,"Deben ser más de 15L por pedido"),
       available: yup.date().nullable(true)
     });
 
@@ -60,7 +60,6 @@
             if(values.available){
               values.available = DateTime.fromISO(values.available)
             }
-            // values['csrfmiddlewaretoken'] = document.getElementsByTagName("input").csrfmiddlewaretoken.value;
             fetch(base_url+'new_order/', {
                 method: 'POST', // or 'PUT'
                 headers: {
@@ -178,7 +177,7 @@
       <Button on:click={exit} color='danger'>Cancelar</Button>
     </Col>
     <Col class="text-center" xs="6">
-      <Button color='success' type="submit">Crear</Button>
+      <Button color='success' type="submit">Listo</Button>
     </Col>
   </Row>
 </Form>

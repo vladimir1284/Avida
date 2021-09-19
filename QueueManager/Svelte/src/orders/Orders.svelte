@@ -68,7 +68,6 @@
             id: currentOrder.id,
             stage: stage
         }
-        // values['csrfmiddlewaretoken'] = document.getElementsByTagName("input").csrfmiddlewaretoken.value;
         fetch(base_url+'update_order/', {
                 method: 'POST', // or 'PUT'
                 headers: {
@@ -173,7 +172,7 @@
         </tr>
         </thead>
         <tbody>
-            {#if get(clients) !== {}}
+            {#if pedidos}
                 {#each pedidos as pedido, index}
                     <tr>
                         <th scope="row"><Button on:click={view_order} id={index}>{index+1}</Button></th>
@@ -182,6 +181,8 @@
                         <td class="text-center">{pedido.lts}L</td>
                     </tr>
                 {/each}
+            {/if}            
+            {#if unavailable}
                 {#each unavailable as pedido, index}
                     <tr style="color: gray;">
                         <th scope="row"><Button on:click={view_order} id={index + pedidos.length}>{index + pedidos.length + 1}</Button></th>

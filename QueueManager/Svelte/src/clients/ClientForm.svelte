@@ -75,7 +75,6 @@
       let confirmAction = confirm("¿Quieres borrar este cliente?");
       if (confirmAction) {
         const values = {'id':client.id};
-        // values['csrfmiddlewaretoken'] = document.getElementsByTagName("input").csrfmiddlewaretoken.value;
         fetch(base_url+'del_client/', {
                 method: 'POST', // or 'PUT'
                 headers: {
@@ -183,7 +182,7 @@
       <Button on:click={() => {openform = false;}} color='danger'>Cancelar</Button>
     </Col>
     <Col class="text-center" xs="6">
-      <Button color='success' type="submit">Submit</Button>
+      <Button color='success' type="submit">Listo</Button>
     </Col>
   </Row>
 </Form>
